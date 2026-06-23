@@ -1,8 +1,9 @@
+
 "use client"
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -10,51 +11,68 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { LanguageProvider, useLanguage } from '@/app/lib/language-context';
-import { Terminal, Copy, Globe, User, Package, Cloud, MapPin, Clock, ShieldAlert } from 'lucide-react';
+import { Terminal, Copy, Globe, Cpu, Network, Files, ShieldCheck, Monitor, ChevronRight, Zap, Info } from 'lucide-react';
 import { Toaster } from '@/components/ui/toaster';
 import { useToast } from '@/hooks/use-toast';
+import { COMMANDS_BY_OS, OSData, Category, CommandDefinition } from '@/app/lib/commands-data';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const MOCK_PLAYERS = ["Steve", "Alex", "Admin", "CreeperHunter", "Miner49er"];
-const MOCK_ITEMS = ["diamond", "iron_sword", "apple", "obsidian", "torch", "gold_ingot"];
-const MOCK_LOCATIONS = ["Spawn", "Base Alpha", "Stronghold", "Village", "Nether Portal"];
-const MOCK_WEATHER = ["clear", "rain", "thunder"];
+const ICON_MAP: Record<string, any> = {
+  Files,
+  Cpu,
+  Network,
+  ShieldCheck,
+  Terminal,
+};
 
 function CommandGenerator() {
   const { t } = useLanguage();
   const { toast } = useToast();
-  const [action, setAction] = useState<string>("");
-  const [player, setPlayer] = useState<string>("");
-  const [item, setItem] = useState<string>("");
-  const [amount, setAmount] = useState<string>("1");
-  const [weatherType, setWeatherType] = useState<string>("");
-  const [location, setLocation] = useState<string>("");
-  const [timeValue, setTimeValue] = useState<string>("1000");
-  const [generatedCommand, setGeneratedCommand] = useState<string>("");
+  
+  const [selectedOSId, setSelectedOSId] = useState<string>('linux');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+  const [selectedCommandId, setSelectedCommandId] = useState<string>('');
+  const [params, setParams] = useState<Record<string, string>>({});
+  const [generatedCommand, setGeneratedCommand] = useState<string>('');
+
+  const currentOS = useMemo(() => COMMANDS_BY_OS.find(os => os.id === selectedOSId), [selectedOSId]);
+  const currentCategory = useMemo(() => currentOS?.categories.find(c => c.name === selectedCategoryId), [currentOS, selectedCategoryId]);
+  const currentCommand = useMemo(() => currentCategory?.commands.find(cmd => cmd.id === selectedCommandId), [currentCategory, selectedCommandId]);
 
   useEffect(() => {
-    generateCommand();
-  }, [action, player, item, amount, weatherType, location, timeValue]);
-
-  const generateCommand = () => {
-    let cmd = "";
-    switch (action) {
-      case "give_item":
-        if (player && item) cmd = `/give ${player} ${item} ${amount}`;
-        break;
-      case "teleport":
-        if (player && location) cmd = `/tp ${player} ${location}`;
-        break;
-      case "weather":
-        if (weatherType) cmd = `/weather ${weatherType}`;
-        break;
-      case "set_time":
-        if (timeValue) cmd = `/time set ${timeValue}`;
-        break;
-      case "kick_ban":
-        if (player) cmd = `/kick ${player} "Rules violation"`;
-        break;
+    if (currentOS && currentOS.categories.length > 0) {
+      setSelectedCategoryId(currentOS.categories[0].name);
     }
-    setGeneratedCommand(cmd);
+  }, [selectedOSId]);
+
+  useEffect(() => {
+    if (currentCategory && currentCategory.commands.length > 0) {
+      setSelectedCommandId(currentCategory.commands[0].id);
+    }
+  }, [currentCategory]);
+
+  useEffect(() => {
+    if (currentCommand) {
+      const defaultParams: Record<string, string> = {};
+      currentCommand.parameters.forEach(p => {
+        defaultParams[p.name] = p.defaultValue || '';
+      });
+      setParams(defaultParams);
+    }
+  }, [currentCommand]);
+
+  useEffect(() => {
+    if (currentCommand) {
+      let cmd = currentCommand.syntax;
+      Object.keys(params).forEach(key => {
+        cmd = cmd.replace(`{${key}}`, params[key] || '');
+      });
+      setGeneratedCommand(cmd.replace(/\s+/g, ' ').trim());
+    }
+  }, [params, currentCommand]);
+
+  const handleParamChange = (name: string, value: string) => {
+    setParams(prev => ({ ...prev, [name]: value }));
   };
 
   const copyToClipboard = () => {
@@ -67,152 +85,213 @@ function CommandGenerator() {
   };
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto p-4 md:p-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight font-headline text-foreground">{t('app_title')}</h1>
-          <p className="text-muted-foreground mt-1">Efficient server administration made easy.</p>
+    <div className="flex flex-col gap-8 w-full max-w-5xl mx-auto p-4 md:p-12 overflow-hidden">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col md:flex-row md:items-end justify-between gap-4"
+      >
+        <div className="space-y-1">
+          <h1 className="text-5xl font-extrabold tracking-tight font-headline text-foreground bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+            {t('app_title')}
+          </h1>
+          <p className="text-muted-foreground text-lg max-w-md">{t('app_subtitle')}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
            <SidebarTrigger className="md:hidden" />
-           <Badge variant="secondary" className="px-3 py-1 bg-primary/10 text-primary border-primary/20">v1.2.0</Badge>
+           <Badge variant="outline" className="px-4 py-1.5 rounded-full border-primary/20 bg-primary/5 text-primary font-bold">
+            PRO EDITION v2.0
+           </Badge>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="border-border shadow-sm bg-card/50 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-xl font-headline">
-              <Terminal className="w-5 h-5 text-primary" />
-              {t('action_label')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t('action_label')}</Label>
-              <Select onValueChange={setAction} value={action}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={t('action_placeholder')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="give_item">{t('give_item')}</SelectItem>
-                  <SelectItem value="teleport">{t('teleport')}</SelectItem>
-                  <SelectItem value="weather">{t('weather')}</SelectItem>
-                  <SelectItem value="set_time">{t('set_time')}</SelectItem>
-                  <SelectItem value="kick_ban">{t('kick_ban')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {action === 'give_item' && (
-              <>
-                <div className="space-y-2">
-                  <Label>{t('player_label')}</Label>
-                  <Select onValueChange={setPlayer} value={player}>
-                    <SelectTrigger><SelectValue placeholder={t('player_placeholder')} /></SelectTrigger>
-                    <SelectContent>
-                      {MOCK_PLAYERS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>{t('item_label')}</Label>
-                  <Select onValueChange={setItem} value={item}>
-                    <SelectTrigger><SelectValue placeholder={t('item_placeholder')} /></SelectTrigger>
-                    <SelectContent>
-                      {MOCK_ITEMS.map(i => <SelectItem key={i} value={i}>{i}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>{t('amount_label')}</Label>
-                  <Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
-                </div>
-              </>
-            )}
-
-            {action === 'teleport' && (
-              <>
-                <div className="space-y-2">
-                  <Label>{t('player_label')}</Label>
-                  <Select onValueChange={setPlayer} value={player}>
-                    <SelectTrigger><SelectValue placeholder={t('player_placeholder')} /></SelectTrigger>
-                    <SelectContent>
-                      {MOCK_PLAYERS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>{t('location_label')}</Label>
-                  <Select onValueChange={setLocation} value={location}>
-                    <SelectTrigger><SelectValue placeholder={t('location_label')} /></SelectTrigger>
-                    <SelectContent>
-                      {MOCK_LOCATIONS.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </>
-            )}
-
-            {action === 'weather' && (
-              <div className="space-y-2">
-                <Label>{t('weather_label')}</Label>
-                <Select onValueChange={setWeatherType} value={weatherType}>
-                  <SelectTrigger><SelectValue placeholder={t('weather_label')} /></SelectTrigger>
-                  <SelectContent>
-                    {MOCK_WEATHER.map(w => <SelectItem key={w} value={w}>{w}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {action === 'set_time' && (
-              <div className="space-y-2">
-                <Label>{t('amount_label')} (0-24000)</Label>
-                <Input type="number" value={timeValue} onChange={(e) => setTimeValue(e.target.value)} />
-              </div>
-            )}
-
-            {action === 'kick_ban' && (
-              <div className="space-y-2">
-                <Label>{t('player_label')}</Label>
-                <Select onValueChange={setPlayer} value={player}>
-                  <SelectTrigger><SelectValue placeholder={t('player_placeholder')} /></SelectTrigger>
-                  <SelectContent>
-                    {MOCK_PLAYERS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <div className="space-y-6">
-          <Card className="border-primary/20 shadow-md bg-primary/[0.02]">
-            <CardHeader>
-              <CardTitle className="text-xl font-headline flex items-center justify-between">
-                {t('command_result')}
-                <Terminal className="w-5 h-5 text-primary opacity-50" />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="lg:col-span-7 space-y-6">
+          <Card className="border-border/50 shadow-2xl bg-card/40 backdrop-blur-xl rounded-2xl overflow-hidden border">
+            <CardHeader className="bg-primary/5 border-b border-primary/10">
+              <CardTitle className="flex items-center gap-2 text-xl font-bold">
+                <Zap className="w-5 h-5 text-primary" />
+                {t('crafting_options')}
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="relative group">
-                <div className="bg-black/90 p-6 rounded-lg font-code text-primary min-h-[100px] flex items-center justify-center break-all text-lg shadow-inner border border-white/10">
-                  {generatedCommand || `/${action || '...'}`}
+            <CardContent className="p-8 space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-2.5">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('os_select_label')}</Label>
+                  <Select onValueChange={setSelectedOSId} value={selectedOSId}>
+                    <SelectTrigger className="h-11 bg-background/50 border-border/50 transition-all focus:ring-primary/20">
+                      <SelectValue placeholder={t('placeholder_select')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COMMANDS_BY_OS.map(os => (
+                        <SelectItem key={os.id} value={os.id}>{os.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <Button 
-                  size="icon" 
-                  onClick={copyToClipboard}
-                  className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-primary hover:bg-primary/90"
-                  disabled={!generatedCommand}
-                >
-                  <Copy className="w-4 h-4" />
-                </Button>
+
+                <div className="space-y-2.5">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('category_label')}</Label>
+                  <Select onValueChange={setSelectedCategoryId} value={selectedCategoryId}>
+                    <SelectTrigger className="h-11 bg-background/50 border-border/50 transition-all focus:ring-primary/20">
+                      <SelectValue placeholder={t('placeholder_select')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {currentOS?.categories.map(cat => (
+                        <SelectItem key={cat.name} value={cat.name}>{cat.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2.5">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('command_label')}</Label>
+                  <Select onValueChange={setSelectedCommandId} value={selectedCommandId}>
+                    <SelectTrigger className="h-11 bg-background/50 border-border/50 transition-all focus:ring-primary/20">
+                      <SelectValue placeholder={t('placeholder_select')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {currentCategory?.commands.map(cmd => (
+                        <SelectItem key={cmd.id} value={cmd.id}>{cmd.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-4 italic text-center">
-                Paste this into your server console or chat.
-              </p>
+
+              {currentCommand && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="p-6 rounded-xl bg-accent/5 border border-accent/10 space-y-3"
+                >
+                  <div className="flex items-center gap-2 text-accent font-bold">
+                    <Info className="w-4 h-4" />
+                    <span>{t('description')}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {currentCommand.description}
+                  </p>
+                </motion.div>
+              )}
+
+              <Separator className="opacity-40" />
+
+              <AnimatePresence mode="wait">
+                {currentCommand && currentCommand.parameters.length > 0 && (
+                  <motion.div 
+                    key={currentCommand.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 10 }}
+                    className="space-y-6"
+                  >
+                    <h3 className="text-lg font-bold flex items-center gap-2">
+                      <ChevronRight className="w-4 h-4 text-primary" />
+                      {t('parameters_title')}
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {currentCommand.parameters.map((param) => (
+                        <div key={param.name} className="space-y-2.5">
+                          <Label className="text-sm font-medium">{param.label}</Label>
+                          {param.type === 'select' ? (
+                            <Select 
+                              onValueChange={(val) => handleParamChange(param.name, val)} 
+                              value={params[param.name] || ''}
+                            >
+                              <SelectTrigger className="h-10 bg-background/40">
+                                <SelectValue placeholder={param.placeholder || t('placeholder_select')} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {param.options?.map(opt => (
+                                  <SelectItem key={opt} value={opt}>{opt || '(empty)'}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <Input 
+                              type={param.type}
+                              placeholder={param.placeholder}
+                              value={params[param.name] || ''}
+                              onChange={(e) => handleParamChange(param.name, e.target.value)}
+                              className="h-10 bg-background/40"
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </CardContent>
+          </Card>
+        </div>
+
+        <div className="lg:col-span-5 space-y-8">
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+          >
+            <Card className="border-primary/20 shadow-2xl bg-black/95 text-white rounded-2xl border overflow-hidden">
+              <CardHeader className="bg-white/5 p-6 border-b border-white/10">
+                <CardTitle className="text-lg font-bold flex items-center justify-between">
+                  {t('result_title')}
+                  <div className="flex gap-1.5">
+                    <div className="w-3 h-3 rounded-full bg-red-500/80" />
+                    <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                    <div className="w-3 h-3 rounded-full bg-green-500/80" />
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="p-8 font-code min-h-[160px] flex items-center justify-center relative group">
+                  <p className="text-2xl text-emerald-400 break-all text-center leading-relaxed">
+                    {generatedCommand ? (
+                      <span className="opacity-60 mr-2">$</span>
+                    ) : null}
+                    {generatedCommand || '...'}
+                  </p>
+                  
+                  {generatedCommand && (
+                    <Button 
+                      size="icon" 
+                      onClick={copyToClipboard}
+                      className="absolute bottom-4 right-4 bg-white/10 hover:bg-white/20 border border-white/10 backdrop-blur-md transition-all shadow-xl"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+                <div className="bg-white/5 p-4 border-t border-white/10">
+                  <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] text-center font-bold">
+                    {t('usage_tip')}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <Card className="border-border/50 bg-card/30 rounded-2xl p-6">
+            <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-4">{t('server_status')}</h4>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border/40">
+                <div className="flex items-center gap-3">
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                  <span className="text-sm font-medium">{t('status_online')}</span>
+                </div>
+                <Badge variant="secondary" className="text-[10px] font-bold">LATENCY: 12ms</Badge>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                 <div className="p-3 rounded-lg bg-background/50 border border-border/40">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase">{currentOS?.name || 'OS'}</p>
+                    <p className="text-xs font-bold text-primary mt-1">OPTIMIZED</p>
+                 </div>
+                 <div className="p-3 rounded-lg bg-background/50 border border-border/40">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase">ENGINE</p>
+                    <p className="text-xs font-bold text-accent mt-1">V8-TURBO</p>
+                 </div>
+              </div>
+            </div>
           </Card>
         </div>
       </div>
@@ -225,29 +304,32 @@ function PageContent() {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen bg-background text-foreground">
-        <Sidebar className="border-r border-border">
-          <SidebarHeader className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20">
-                <Terminal className="w-6 h-6" />
+      <div className="flex min-h-screen bg-[#F7F9FA] dark:bg-[#0E1117] text-foreground font-body">
+        <Sidebar className="border-r border-border/50 bg-sidebar/80 backdrop-blur-md">
+          <SidebarHeader className="p-8">
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              className="flex items-center gap-4 cursor-pointer"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white shadow-2xl shadow-primary/30">
+                <Terminal className="w-7 h-7" />
               </div>
-              <span className="font-bold text-xl tracking-tight">{t('app_title')}</span>
-            </div>
+              <span className="font-black text-2xl tracking-tighter">{t('app_title')}</span>
+            </motion.div>
           </SidebarHeader>
-          <SidebarContent>
+          <SidebarContent className="px-4">
             <SidebarGroup>
-              <SidebarGroupLabel className="px-4 py-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              <SidebarGroupLabel className="px-4 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60">
                 {t('sidebar_language')}
               </SidebarGroupLabel>
-              <SidebarMenu>
+              <SidebarMenu className="gap-2">
                 <SidebarMenuItem>
                   <SidebarMenuButton 
                     onClick={() => setLanguage('en')} 
                     isActive={language === 'en'}
-                    className={`transition-all duration-200 ${language === 'en' ? 'bg-primary/10 text-primary font-bold' : ''}`}
+                    className={`h-11 rounded-xl px-4 transition-all ${language === 'en' ? 'bg-primary/10 text-primary font-bold shadow-sm' : 'hover:bg-accent/5'}`}
                   >
-                    <Globe className="w-4 h-4 mr-2" />
+                    <Globe className="w-4 h-4 mr-3" />
                     English
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -255,73 +337,48 @@ function PageContent() {
                   <SidebarMenuButton 
                     onClick={() => setLanguage('es')} 
                     isActive={language === 'es'}
-                    className={`transition-all duration-200 ${language === 'es' ? 'bg-primary/10 text-primary font-bold' : ''}`}
+                    className={`h-11 rounded-xl px-4 transition-all ${language === 'es' ? 'bg-primary/10 text-primary font-bold shadow-sm' : 'hover:bg-accent/5'}`}
                   >
-                    <Globe className="w-4 h-4 mr-2" />
+                    <Globe className="w-4 h-4 mr-3" />
                     Español
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroup>
 
-            <Separator className="mx-4 my-2 opacity-50" />
+            <Separator className="mx-4 my-6 opacity-30" />
 
             <SidebarGroup>
-              <SidebarGroupLabel className="px-4 py-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              <SidebarGroupLabel className="px-4 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60">
                 {t('presets')}
               </SidebarGroupLabel>
-              <SidebarMenu className="gap-1 px-2">
-                <SidebarMenuItem>
-                  <SidebarMenuButton className="hover:bg-primary/5 rounded-lg group">
-                    <User className="w-4 h-4 mr-2 text-muted-foreground group-hover:text-primary" />
-                    Player Management
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton className="hover:bg-primary/5 rounded-lg group">
-                    <Package className="w-4 h-4 mr-2 text-muted-foreground group-hover:text-primary" />
-                    Item Spawning
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton className="hover:bg-primary/5 rounded-lg group">
-                    <Cloud className="w-4 h-4 mr-2 text-muted-foreground group-hover:text-primary" />
-                    Environment
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton className="hover:bg-primary/5 rounded-lg group">
-                    <MapPin className="w-4 h-4 mr-2 text-muted-foreground group-hover:text-primary" />
-                    Teleportation
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton className="hover:bg-primary/5 rounded-lg group">
-                    <Clock className="w-4 h-4 mr-2 text-muted-foreground group-hover:text-primary" />
-                    Time Control
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton className="hover:bg-primary/5 rounded-lg group">
-                    <ShieldAlert className="w-4 h-4 mr-2 text-muted-foreground group-hover:text-primary" />
-                    Security & Logs
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+              <SidebarMenu className="gap-1">
+                {Object.entries(ICON_MAP).map(([name, Icon]) => (
+                  <SidebarMenuItem key={name}>
+                    <SidebarMenuButton className="h-10 rounded-xl px-4 hover:bg-primary/5 group transition-all">
+                      <Icon className="w-4 h-4 mr-3 text-muted-foreground group-hover:text-primary transition-colors" />
+                      <span className="text-sm font-medium">{name}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
               </SidebarMenu>
             </SidebarGroup>
           </SidebarContent>
-          <div className="mt-auto p-4">
-             <div className="bg-primary/5 rounded-xl p-4 border border-primary/10">
-                <p className="text-[10px] font-bold text-primary/70 uppercase tracking-tighter mb-1">Server Status</p>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-xs font-medium">Production Node Beta</span>
+          <SidebarFooter className="p-6">
+             <div className="bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl p-5 border border-primary/10 shadow-sm">
+                <p className="text-[10px] font-black text-primary/70 uppercase tracking-widest mb-2">Cloud Core</p>
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping absolute inset-0" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 relative" />
+                  </div>
+                  <span className="text-xs font-bold">Stable Node Alpha</span>
                 </div>
              </div>
-          </div>
+          </SidebarFooter>
         </Sidebar>
-        <SidebarInset className="flex-1 bg-background">
-          <main className="h-full flex flex-col items-center justify-center">
+        <SidebarInset className="flex-1 bg-background overflow-x-hidden">
+          <main className="min-h-screen flex items-center justify-center py-12 md:py-0">
             <CommandGenerator />
           </main>
         </SidebarInset>
