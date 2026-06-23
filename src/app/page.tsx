@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -10,8 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { LanguageProvider, useLanguage } from '@/app/lib/language-context';
-import { aiCommandParameterSuggestions } from '@/ai/flows/ai-command-parameter-suggestions';
-import { Sparkles, Terminal, Copy, Globe, User, Package, Cloud, MapPin, Clock, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { Terminal, Copy, Globe, User, Package, Cloud, MapPin, Clock, ShieldAlert } from 'lucide-react';
 import { Toaster } from '@/components/ui/toaster';
 import { useToast } from '@/hooks/use-toast';
 
@@ -21,7 +20,7 @@ const MOCK_LOCATIONS = ["Spawn", "Base Alpha", "Stronghold", "Village", "Nether 
 const MOCK_WEATHER = ["clear", "rain", "thunder"];
 
 function CommandGenerator() {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const { toast } = useToast();
   const [action, setAction] = useState<string>("");
   const [player, setPlayer] = useState<string>("");
@@ -31,8 +30,6 @@ function CommandGenerator() {
   const [location, setLocation] = useState<string>("");
   const [timeValue, setTimeValue] = useState<string>("1000");
   const [generatedCommand, setGeneratedCommand] = useState<string>("");
-  const [aiSuggestions, setAiSuggestions] = useState<any[]>([]);
-  const [isLoadingAi, setIsLoadingAi] = useState(false);
 
   useEffect(() => {
     generateCommand();
@@ -60,34 +57,8 @@ function CommandGenerator() {
     setGeneratedCommand(cmd);
   };
 
-  const handleAiSuggestions = async () => {
-    if (!action) return;
-    setIsLoadingAi(true);
-    try {
-      const result = await aiCommandParameterSuggestions({
-        selectedAction: t(action),
-        serverContext: {
-          players: MOCK_PLAYERS,
-          items: MOCK_ITEMS,
-          weatherStates: MOCK_WEATHER,
-          locations: MOCK_LOCATIONS
-        }
-      });
-      setAiSuggestions(result.suggestions);
-      if (result.commandExample) {
-         toast({
-           title: "AI Suggestion",
-           description: `Example: ${result.commandExample}`,
-         });
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoadingAi(false);
-    }
-  };
-
   const copyToClipboard = () => {
+    if (!generatedCommand) return;
     navigator.clipboard.writeText(generatedCommand);
     toast({
       title: t('copied'),
@@ -213,16 +184,6 @@ function CommandGenerator() {
                 </Select>
               </div>
             )}
-
-            <Button 
-              onClick={handleAiSuggestions} 
-              variant="outline" 
-              className="w-full mt-4 border-primary/20 hover:bg-primary/5 text-primary gap-2"
-              disabled={!action || isLoadingAi}
-            >
-              {isLoadingAi ? <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" /> : <Sparkles className="w-4 h-4" />}
-              {isLoadingAi ? t('ai_loading') : t('ai_suggest_btn')}
-            </Button>
           </CardContent>
         </Card>
 
@@ -253,37 +214,6 @@ function CommandGenerator() {
               </p>
             </CardContent>
           </Card>
-
-          {aiSuggestions.length > 0 && (
-            <Card className="border-accent/20 bg-accent/5">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-semibold uppercase tracking-wider text-accent flex items-center gap-2">
-                  <Sparkles className="w-4 h-4" />
-                  AI Suggested Parameters
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {aiSuggestions.map((s, idx) => (
-                  <div key={idx} className="bg-background/80 p-3 rounded-md border border-accent/10">
-                    <div className="flex justify-between items-start">
-                      <span className="font-bold text-accent">{s.parameterName}</span>
-                      <Badge variant="outline" className="text-[10px] uppercase font-bold px-1.5 py-0">{s.type}</Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">{s.description}</p>
-                    {s.examples && (
-                      <div className="flex gap-1 mt-2 flex-wrap">
-                        {s.examples.map((ex: string) => (
-                          <span key={ex} className="text-[10px] bg-accent/10 text-accent px-1.5 py-0.5 rounded cursor-pointer hover:bg-accent/20 transition-colors">
-                            {ex}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          )}
         </div>
       </div>
     </div>

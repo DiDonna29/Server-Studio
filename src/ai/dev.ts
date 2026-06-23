@@ -1,4 +1,1 @@
-import { config } from 'dotenv';
-config();
-
-import '@/ai/flows/ai-command-parameter-suggestions.ts';
+// AI development flows removed by user request.

@@ -26,8 +26,6 @@ const translations: Record<Language, Record<string, string>> = {
     generate_btn: 'Generate Command',
     copy_btn: 'Copy',
     copied: 'Copied!',
-    ai_suggest_btn: 'AI Smart Parameters',
-    ai_loading: 'Thinking...',
     command_result: 'Generated Command',
     recent_commands: 'Recent',
     presets: 'Presets',
@@ -35,8 +33,7 @@ const translations: Record<Language, Record<string, string>> = {
     teleport: 'Teleport',
     weather: 'Change Weather',
     set_time: 'Set Time',
-    kick_ban: 'Kick/Ban Player',
-    param_hint: 'AI suggestions will appear here'
+    kick_ban: 'Kick/Ban Player'
   },
   es: {
     app_title: 'Comando Rápido',
@@ -53,8 +50,6 @@ const translations: Record<Language, Record<string, string>> = {
     generate_btn: 'Generar Comando',
     copy_btn: 'Copiar',
     copied: '¡Copiado!',
-    ai_suggest_btn: 'Parámetros IA',
-    ai_loading: 'Pensando...',
     command_result: 'Comando Generado',
     recent_commands: 'Recientes',
     presets: 'Ajustes',
@@ -62,8 +57,7 @@ const translations: Record<Language, Record<string, string>> = {
     teleport: 'Teletransportar',
     weather: 'Cambiar Clima',
     set_time: 'Ajustar Tiempo',
-    kick_ban: 'Expulsar/Banear',
-    param_hint: 'Sugerencias de IA aparecerán aquí'
+    kick_ban: 'Expulsar/Banear'
   }
 };
 
