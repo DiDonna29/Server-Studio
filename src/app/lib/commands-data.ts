@@ -1,4 +1,3 @@
-
 export type Parameter = {
   name: string;
   label: string;
@@ -23,110 +22,65 @@ export type Category = {
 };
 
 export type OSData = {
-  id: 'linux' | 'windows' | 'macos';
+  id: string;
   name: string;
   categories: Category[];
 };
 
 export const COMMANDS_BY_OS: OSData[] = [
   {
-    id: 'linux',
-    name: 'Linux',
+    id: 'minecraft',
+    name: 'Minecraft',
     categories: [
       {
-        name: 'File Management',
-        icon: 'Files',
+        name: 'Player Management',
+        icon: 'User',
         commands: [
           {
-            id: 'ls',
-            label: 'List Directory',
-            description: 'List information about files in the current directory.',
-            syntax: 'ls {options} {path}',
+            id: 'give',
+            label: '/give',
+            description: 'Give an item to a player.',
+            syntax: '/give {player} {item} {amount}',
             parameters: [
-              { name: 'options', label: 'Options', type: 'select', options: ['default', '-l', '-a', '-la', '-lh', '-R'], defaultValue: '-la' },
-              { name: 'path', label: 'Path', type: 'text', placeholder: '.', defaultValue: '' }
+              { name: 'player', label: 'Player Name', type: 'text', placeholder: '@p', defaultValue: '@p' },
+              { name: 'item', label: 'Item ID', type: 'text', placeholder: 'minecraft:diamond', defaultValue: 'minecraft:diamond' },
+              { name: 'amount', label: 'Amount', type: 'number', defaultValue: '64' }
             ]
           },
           {
-            id: 'cp',
-            label: 'Copy Files',
-            description: 'Copy files or directories from source to destination.',
-            syntax: 'cp {options} {source} {destination}',
+            id: 'tp',
+            label: '/tp',
+            description: 'Teleport players or entities.',
+            syntax: '/tp {player} {target}',
             parameters: [
-              { name: 'options', label: 'Options', type: 'select', options: ['default', '-r', '-v', '-p', '-i', '-u'], defaultValue: '-r' },
-              { name: 'source', label: 'Source', type: 'text', placeholder: 'file.txt' },
-              { name: 'destination', label: 'Destination', type: 'text', placeholder: '/path/to/dest' }
+              { name: 'player', label: 'Player', type: 'text', placeholder: 'PlayerName' },
+              { name: 'target', label: 'Target / Coordinates', type: 'text', placeholder: 'X Y Z or PlayerName' }
             ]
           },
           {
-            id: 'find',
-            label: 'Find Files',
-            description: 'Search for files in a directory hierarchy.',
-            syntax: 'find {path} -name "{pattern}" {options}',
+            id: 'gamemode',
+            label: '/gamemode',
+            description: 'Sets a player\'s game mode.',
+            syntax: '/gamemode {mode} {player}',
             parameters: [
-              { name: 'path', label: 'Path', type: 'text', defaultValue: '.' },
-              { name: 'pattern', label: 'Pattern', type: 'text', placeholder: '*.txt' },
-              { name: 'options', label: 'Extra Options', type: 'select', options: ['default', '-type f', '-type d', '-empty', '-mtime -7'], defaultValue: 'default' }
+              { name: 'mode', label: 'Mode', type: 'select', options: ['creative', 'survival', 'adventure', 'spectator'], defaultValue: 'creative' },
+              { name: 'player', label: 'Player', type: 'text', placeholder: '@s', defaultValue: '@s' }
             ]
           }
         ]
       },
       {
-        name: 'System Control',
-        icon: 'Cpu',
+        name: 'World Control',
+        icon: 'Globe',
         commands: [
           {
-            id: 'systemctl',
-            label: 'System Services',
-            description: 'Control the systemd system and service manager.',
-            syntax: 'sudo systemctl {action} {service}',
+            id: 'weather',
+            label: '/weather',
+            description: 'Sets the weather.',
+            syntax: '/weather {type} {duration}',
             parameters: [
-              { name: 'action', label: 'Action', type: 'select', options: ['start', 'stop', 'restart', 'status', 'enable', 'disable', 'daemon-reload'], defaultValue: 'status' },
-              { name: 'service', label: 'Service Name', type: 'text', placeholder: 'nginx' }
-            ]
-          },
-          {
-            id: 'top',
-            label: 'Process Monitor',
-            description: 'Display Linux processes and system resource usage.',
-            syntax: 'top {options}',
-            parameters: [
-              { name: 'options', label: 'Options', type: 'select', options: ['default', '-u root', '-p 1', '-n 1', '-b'], defaultValue: 'default' }
-            ]
-          },
-          {
-            id: 'journalctl',
-            label: 'System Logs',
-            description: 'Query and display logs from journald.',
-            syntax: 'journalctl {options}',
-            parameters: [
-              { name: 'options', label: 'Filter', type: 'select', options: ['default', '-u nginx', '-f', '-n 100', '-p err', '--since "1 hour ago"'], defaultValue: '-n 100' }
-            ]
-          }
-        ]
-      },
-      {
-        name: 'Networking',
-        icon: 'Network',
-        commands: [
-          {
-            id: 'ssh',
-            label: 'SSH Connect',
-            description: 'Secure Shell remote login client.',
-            syntax: 'ssh {user}@{host} {options}',
-            parameters: [
-              { name: 'user', label: 'User', type: 'text', defaultValue: 'root' },
-              { name: 'host', label: 'Host', type: 'text', placeholder: '1.2.3.4' },
-              { name: 'options', label: 'Port/Key', type: 'select', options: ['default', '-p 22', '-i ~/.ssh/id_rsa', '-v', '-C'], defaultValue: 'default' }
-            ]
-          },
-          {
-            id: 'netstat',
-            label: 'Network Statistics',
-            description: 'Print network connections, routing tables, and interface statistics.',
-            syntax: 'netstat {options}',
-            parameters: [
-              { name: 'options', label: 'Filter', type: 'select', options: ['-tulpn', '-an', '-r', '-i'], defaultValue: '-tulpn' }
+              { name: 'type', label: 'Weather Type', type: 'select', options: ['clear', 'rain', 'thunder'], defaultValue: 'clear' },
+              { name: 'duration', label: 'Duration (seconds)', type: 'number', defaultValue: '1000' }
             ]
           }
         ]
@@ -134,52 +88,137 @@ export const COMMANDS_BY_OS: OSData[] = [
     ]
   },
   {
-    id: 'windows',
-    name: 'Windows',
+    id: 'zomboid',
+    name: 'Project Zomboid',
     categories: [
       {
-        name: 'Networking',
-        icon: 'Network',
+        name: 'Admin Tools',
+        icon: 'ShieldCheck',
         commands: [
           {
-            id: 'ipconfig',
-            label: 'IP Config',
-            description: 'Displays all current TCP/IP network configuration values.',
-            syntax: 'ipconfig {option}',
+            id: 'grantadmin',
+            label: '/grantadmin',
+            description: 'Give admin powers to a user.',
+            syntax: '/grantadmin "{username}"',
             parameters: [
-              { name: 'option', label: 'Option', type: 'select', options: ['default', '/all', '/release', '/renew', '/flushdns'], defaultValue: '/all' }
+              { name: 'username', label: 'Username', type: 'text', placeholder: 'SurvivorName' }
             ]
           },
           {
-            id: 'ping',
-            label: 'Ping Host',
-            description: 'Verify connectivity to a remote host.',
-            syntax: 'ping {host} {options}',
+            id: 'additem',
+            label: '/additem',
+            description: 'Add an item to a player\'s inventory.',
+            syntax: '/additem "{username}" "{item}" {count}',
             parameters: [
-              { name: 'host', label: 'Host', type: 'text', defaultValue: '8.8.8.8' },
-              { name: 'options', label: 'Options', type: 'select', options: ['default', '-t', '-n 10', '-l 64', '-4'], defaultValue: 'default' }
+              { name: 'username', label: 'Username', type: 'text' },
+              { name: 'item', label: 'Item Module.ID', type: 'text', placeholder: 'Base.Axe', defaultValue: 'Base.Axe' },
+              { name: 'count', label: 'Amount', type: 'number', defaultValue: '1' }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'linux',
+    name: 'Linux Terminal',
+    categories: [
+      {
+        name: 'System Control',
+        icon: 'Terminal',
+        commands: [
+          {
+            id: 'update',
+            label: 'System Update',
+            description: 'Update package lists and upgrade system.',
+            syntax: 'sudo apt update && sudo apt upgrade -y',
+            parameters: []
+          },
+          {
+            id: 'reboot',
+            label: 'Reboot',
+            description: 'Restart the system immediately.',
+            syntax: 'sudo reboot now',
+            parameters: []
+          },
+          {
+            id: 'permissions',
+            label: 'Chmod',
+            description: 'Change file/directory permissions.',
+            syntax: 'chmod {mode} {path}',
+            parameters: [
+              { name: 'mode', label: 'Mode', type: 'text', placeholder: '755', defaultValue: '755' },
+              { name: 'path', label: 'Target Path', type: 'text', placeholder: '/var/www/html' }
             ]
           }
         ]
       },
       {
-        name: 'System',
+        name: 'Networking',
+        icon: 'Globe',
+        commands: [
+          {
+            id: 'ip',
+            label: 'IP Info',
+            description: 'Show network interfaces and IP addresses.',
+            syntax: 'ip addr show',
+            parameters: []
+          },
+          {
+            id: 'netstat',
+            label: 'Netstat',
+            description: 'List active network connections.',
+            syntax: 'netstat -tulpn',
+            parameters: []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'windows',
+    name: 'Windows CMD/PS',
+    categories: [
+      {
+        name: 'Process Management',
         icon: 'Cpu',
         commands: [
           {
             id: 'tasklist',
             label: 'Task List',
-            description: 'Displays a list of currently running processes.',
-            syntax: 'tasklist {filter}',
+            description: 'Display all running tasks.',
+            syntax: 'tasklist',
+            parameters: []
+          },
+          {
+            id: 'taskkill',
+            label: 'Task Kill',
+            description: 'Stop a running process by name.',
+            syntax: 'taskkill /IM "{process}" /F',
             parameters: [
-              { name: 'filter', label: 'Filter', type: 'select', options: ['default', '/v', '/svc', '/apps'], defaultValue: 'default' }
+              { name: 'process', label: 'Process Name', type: 'text', placeholder: 'notepad.exe', defaultValue: 'notepad.exe' }
+            ]
+          }
+        ]
+      },
+      {
+        name: 'Disk & Files',
+        icon: 'Box',
+        commands: [
+          {
+            id: 'chkdsk',
+            label: 'Check Disk',
+            description: 'Check for disk errors.',
+            syntax: 'chkdsk {drive}: /f',
+            parameters: [
+              { name: 'drive', label: 'Drive Letter', type: 'text', placeholder: 'C', defaultValue: 'C' }
             ]
           },
           {
-            id: 'sfc',
-            label: 'File Checker',
-            description: 'Scans and verifies the integrity of all protected system files.',
-            syntax: 'sfc /scannow',
+            id: 'flushdns',
+            label: 'Flush DNS',
+            description: 'Clear the DNS resolver cache.',
+            syntax: 'ipconfig /flushdns',
             parameters: []
           }
         ]
@@ -188,47 +227,25 @@ export const COMMANDS_BY_OS: OSData[] = [
   },
   {
     id: 'macos',
-    name: 'macOS',
+    name: 'macOS / Darwin',
     categories: [
-      {
-        name: 'Package Manager',
-        icon: 'Database',
-        commands: [
-          {
-            id: 'brew',
-            label: 'Homebrew',
-            description: 'Install and manage packages on macOS.',
-            syntax: 'brew {action} {package}',
-            parameters: [
-              { name: 'action', label: 'Action', type: 'select', options: ['install', 'uninstall', 'update', 'upgrade', 'list', 'info'], defaultValue: 'install' },
-              { name: 'package', label: 'Package', type: 'text', placeholder: 'node' }
-            ]
-          }
-        ]
-      },
       {
         name: 'Utilities',
         icon: 'Terminal',
         commands: [
           {
-            id: 'diskutil',
-            label: 'Disk Utility',
-            description: 'Manage disks and volumes.',
-            syntax: 'diskutil {action} {target}',
-            parameters: [
-              { name: 'action', label: 'Action', type: 'select', options: ['list', 'info', 'verifyDisk', 'repairDisk'], defaultValue: 'list' },
-              { name: 'target', label: 'Disk ID', type: 'text', placeholder: '/dev/disk0' }
-            ]
+            id: 'purge',
+            label: 'Purge RAM',
+            description: 'Clear system disk cache and memory.',
+            syntax: 'sudo purge',
+            parameters: []
           },
           {
-            id: 'networksetup',
-            label: 'Network Setup',
-            description: 'Configuration tool for network settings.',
-            syntax: 'networksetup -{action} {interface}',
-            parameters: [
-              { name: 'action', label: 'Action', type: 'select', options: ['listallnetworkservices', 'getinfo', 'getairportnetwork'], defaultValue: 'listallnetworkservices' },
-              { name: 'interface', label: 'Interface', type: 'text', placeholder: 'Wi-Fi' }
-            ]
+            id: 'pmset',
+            label: 'Power Management',
+            description: 'Force Mac to stay awake.',
+            syntax: 'caffeinate -i',
+            parameters: []
           }
         ]
       }

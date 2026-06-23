@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -24,37 +23,28 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { LanguageProvider, useLanguage } from '@/app/lib/language-context';
-import { Terminal, Copy, Globe, Cpu, Network, Files, ShieldCheck, Monitor, ChevronRight, Zap, Info, Server, Activity, Lock, Database } from 'lucide-react';
+import { Terminal, Copy, Globe, Cpu, Radio, ChevronRight, Info, Gamepad2, Box, Activity } from 'lucide-react';
 import { Toaster } from '@/components/ui/toaster';
 import { useToast } from '@/hooks/use-toast';
 import { COMMANDS_BY_OS } from '@/app/lib/commands-data';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const ICON_MAP: Record<string, any> = {
-  Files,
-  Cpu,
-  Network,
-  ShieldCheck,
-  Terminal,
-  Server,
-  Activity,
-  Lock,
-  Database
-};
+interface CommandGeneratorProps {
+  selectedOSId: string;
+}
 
-function CommandGenerator() {
+function CommandGenerator({ selectedOSId }: CommandGeneratorProps) {
   const { t } = useLanguage();
   const { toast } = useToast();
   
-  const [selectedOSId, setSelectedOSId] = useState<string>('linux');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   const [selectedCommandId, setSelectedCommandId] = useState<string>('');
   const [params, setParams] = useState<Record<string, string>>({});
   const [generatedCommand, setGeneratedCommand] = useState<string>('');
 
   const currentOS = useMemo(() => COMMANDS_BY_OS.find(os => os.id === selectedOSId), [selectedOSId]);
-  const currentCategory = useMemo(() => currentOS?.categories.find(c => c.name === selectedCategoryId), [currentOS, selectedCategoryId]);
-  const currentCommand = useMemo(() => currentCategory?.commands.find(cmd => cmd.id === selectedCommandId), [currentCategory, selectedCommandId]);
+  const currentCategory = useMemo(() => currentOS?.categories.find(c => c.name === selectedCategoryId) || currentOS?.categories[0], [currentOS, selectedCategoryId]);
+  const currentCommand = useMemo(() => currentCategory?.commands.find(cmd => cmd.id === selectedCommandId) || currentCategory?.commands[0], [currentCategory, selectedCommandId]);
 
   useEffect(() => {
     if (currentOS && currentOS.categories.length > 0) {
@@ -120,7 +110,7 @@ function CommandGenerator() {
         <div className="flex items-center gap-4">
            <SidebarTrigger className="md:hidden" />
            <Badge variant="outline" className="px-6 py-2 rounded-full border-primary/30 bg-primary/5 text-primary font-bold tracking-wide shadow-sm">
-            ELITE EDITION V2.5
+            PRO EDITION V4.0
            </Badge>
         </div>
       </motion.div>
@@ -130,26 +120,12 @@ function CommandGenerator() {
           <Card className="border-border/60 shadow-2xl bg-card/60 backdrop-blur-3xl rounded-3xl overflow-hidden border">
             <CardHeader className="bg-primary/5 border-b border-primary/10 p-6 md:p-8">
               <CardTitle className="flex items-center gap-3 text-xl font-bold tracking-tight">
-                <Zap className="w-6 h-6 text-primary animate-pulse" />
+                <Radio className="w-6 h-6 text-primary animate-pulse" />
                 {t('crafting_options')}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 md:p-10 space-y-10">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="space-y-3">
-                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/80">{t('os_select_label')}</Label>
-                  <Select onValueChange={setSelectedOSId} value={selectedOSId}>
-                    <SelectTrigger className="h-12 bg-background/40 border-border/40 transition-all hover:bg-background/60 focus:ring-primary/20 rounded-xl">
-                      <SelectValue placeholder={t('placeholder_select')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {COMMANDS_BY_OS.map(os => (
-                        <SelectItem key={os.id} value={os.id}>{os.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-3">
                   <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/80">{t('category_label')}</Label>
                   <Select onValueChange={setSelectedCategoryId} value={selectedCategoryId}>
@@ -224,7 +200,7 @@ function CommandGenerator() {
                               </SelectTrigger>
                               <SelectContent>
                                 {param.options?.map(opt => (
-                                  <SelectItem key={opt} value={opt}>{opt === 'default' ? '(empty)' : opt}</SelectItem>
+                                  <SelectItem key={opt} value={opt}>{opt === 'default' ? '(vacio)' : opt}</SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
@@ -268,9 +244,9 @@ function CommandGenerator() {
                   <div className="w-full">
                     <p className="text-xl md:text-3xl text-emerald-400 break-all leading-relaxed tracking-tight">
                       {generatedCommand ? (
-                        <span className="opacity-40 mr-3 select-none">$</span>
+                        <span className="opacity-40 mr-3 select-none">#</span>
                       ) : null}
-                      {generatedCommand || <span className="text-white/20 animate-pulse italic">Waiting for command forge...</span>}
+                      {generatedCommand || <span className="text-white/20 animate-pulse italic">Awaiting selection...</span>}
                     </p>
                   </div>
                   
@@ -304,16 +280,16 @@ function CommandGenerator() {
                   </div>
                   <span className="text-sm font-bold tracking-tight">{t('status_online')}</span>
                 </div>
-                <Badge variant="secondary" className="text-[9px] font-black tracking-widest bg-emerald-500/10 text-emerald-600 border-none">LATENCY: 8MS</Badge>
+                <Badge variant="secondary" className="text-[9px] font-black tracking-widest bg-emerald-500/10 text-emerald-600 border-none">PING: 5MS</Badge>
               </div>
               <div className="grid grid-cols-2 gap-4">
                  <div className="p-5 rounded-2xl bg-background/60 border border-border/40 shadow-sm transition-hover hover:border-primary/20">
-                    <p className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest">{currentOS?.name || 'OS'}</p>
-                    <p className="text-sm font-black text-primary mt-2">NATIVE CORE</p>
+                    <p className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest">{currentOS?.name || 'GAME'}</p>
+                    <p className="text-sm font-black text-primary mt-2">READY</p>
                  </div>
                  <div className="p-5 rounded-2xl bg-background/60 border border-border/40 shadow-sm transition-hover hover:border-accent/20">
-                    <p className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest">ARCHITECTURE</p>
-                    <p className="text-sm font-black text-accent mt-2">V8-ULTRA</p>
+                    <p className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest">TPS / LOAD</p>
+                    <p className="text-sm font-black text-accent mt-2">OPTIMAL</p>
                  </div>
               </div>
             </div>
@@ -326,6 +302,7 @@ function CommandGenerator() {
 
 function PageContent() {
   const { t, setLanguage, language } = useLanguage();
+  const [selectedOSId, setSelectedOSId] = useState<string>('minecraft');
 
   return (
     <SidebarProvider>
@@ -338,7 +315,7 @@ function PageContent() {
             >
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary via-primary to-accent flex items-center justify-center text-white shadow-2xl shadow-primary/40 group relative overflow-hidden">
                 <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <Terminal className="w-8 h-8 relative z-10" />
+                <Gamepad2 className="w-8 h-8 relative z-10" />
               </div>
               <div className="flex flex-col">
                 <span className="font-black text-2xl tracking-tighter leading-none">{t('app_title')}</span>
@@ -382,35 +359,37 @@ function PageContent() {
                 {t('presets')}
               </SidebarGroupLabel>
               <SidebarMenu className="gap-2">
-                {Object.entries(ICON_MAP).map(([name, Icon]) => (
-                  <SidebarMenuItem key={name}>
-                    <SidebarMenuButton className="h-11 rounded-xl px-5 hover:bg-primary/10 group transition-all duration-300">
-                      <Icon className="w-4.5 h-4.5 mr-4 text-muted-foreground group-hover:text-primary transition-colors duration-300" />
-                      <span className="text-sm font-bold text-muted-foreground/80 group-hover:text-foreground transition-colors">{name}</span>
+                {COMMANDS_BY_OS.map((game) => (
+                  <SidebarMenuItem key={game.id}>
+                    <SidebarMenuButton 
+                      onClick={() => setSelectedOSId(game.id)}
+                      isActive={selectedOSId === game.id}
+                      className={`h-11 rounded-xl px-5 group transition-all duration-300 ${selectedOSId === game.id ? 'bg-accent/10 text-accent font-bold' : 'hover:bg-primary/10'}`}
+                    >
+                      <span className="text-sm font-bold">{game.name}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
             </SidebarGroup>
           </SidebarContent>
-          <SidebarFooter className="p-8">
-             <div className="bg-gradient-to-br from-primary/10 via-accent/5 to-transparent rounded-3xl p-6 border border-primary/20 shadow-2xl relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full -translate-y-12 translate-x-12 blur-3xl group-hover:bg-primary/20 transition-all duration-500" />
-                <p className="text-[9px] font-black text-primary/80 uppercase tracking-[0.3em] mb-3">System Node Alpha</p>
-                <div className="flex items-center gap-4">
+          <SidebarFooter className="p-6">
+             <div className="bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl p-5 border border-primary/10 shadow-sm">
+                <p className="text-[10px] font-black text-primary/70 uppercase tracking-widest mb-2">Cloud Core</p>
+                <div className="flex items-center gap-3">
                   <div className="relative">
-                    <div className="w-3 h-3 rounded-full bg-emerald-500 animate-ping absolute inset-0" />
-                    <div className="w-3 h-3 rounded-full bg-emerald-500 relative shadow-sm" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping absolute inset-0" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 relative shadow-sm" />
                   </div>
-                  <span className="text-xs font-bold tracking-tight">V8-CORE STABLE</span>
+                  <span className="text-xs font-bold tracking-tight">STABLE NODE</span>
                 </div>
              </div>
           </SidebarFooter>
         </Sidebar>
         <SidebarInset className="flex-1 bg-background/50 overflow-x-hidden relative">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(59,130,246,0.05),transparent_50%)] pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,180,216,0.05),transparent_50%)] pointer-events-none" />
           <main className="min-h-screen flex items-center justify-center py-16 md:py-24 relative z-10">
-            <CommandGenerator />
+            <CommandGenerator selectedOSId={selectedOSId} />
           </main>
         </SidebarInset>
       </div>
