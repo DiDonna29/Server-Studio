@@ -2,8 +2,21 @@
 "use client"
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { 
+  SidebarProvider, 
+  Sidebar, 
+  SidebarContent, 
+  SidebarHeader, 
+  SidebarFooter, 
+  SidebarGroup, 
+  SidebarGroupLabel, 
+  SidebarMenu, 
+  SidebarMenuItem, 
+  SidebarMenuButton, 
+  SidebarInset, 
+  SidebarTrigger 
+} from '@/components/ui/sidebar';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -14,7 +27,7 @@ import { LanguageProvider, useLanguage } from '@/app/lib/language-context';
 import { Terminal, Copy, Globe, Cpu, Network, Files, ShieldCheck, Monitor, ChevronRight, Zap, Info, Server, Activity, Lock, Database } from 'lucide-react';
 import { Toaster } from '@/components/ui/toaster';
 import { useToast } from '@/hooks/use-toast';
-import { COMMANDS_BY_OS, OSData, Category, CommandDefinition } from '@/app/lib/commands-data';
+import { COMMANDS_BY_OS } from '@/app/lib/commands-data';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ICON_MAP: Record<string, any> = {
@@ -47,7 +60,7 @@ function CommandGenerator() {
     if (currentOS && currentOS.categories.length > 0) {
       setSelectedCategoryId(currentOS.categories[0].name);
     }
-  }, [selectedOSId]);
+  }, [selectedOSId, currentOS]);
 
   useEffect(() => {
     if (currentCategory && currentCategory.commands.length > 0) {
@@ -69,7 +82,8 @@ function CommandGenerator() {
     if (currentCommand) {
       let cmd = currentCommand.syntax;
       Object.keys(params).forEach(key => {
-        cmd = cmd.replace(`{${key}}`, params[key] || '');
+        const val = params[key] === 'default' ? '' : params[key];
+        cmd = cmd.replace(`{${key}}`, val || '');
       });
       setGeneratedCommand(cmd.replace(/\s+/g, ' ').trim());
     }
@@ -89,41 +103,43 @@ function CommandGenerator() {
   };
 
   return (
-    <div className="flex flex-col gap-8 w-full max-w-5xl mx-auto p-4 md:p-12 overflow-hidden">
+    <div className="flex flex-col gap-8 w-full max-w-6xl mx-auto p-4 md:p-8 lg:p-12 overflow-hidden">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col md:flex-row md:items-end justify-between gap-4"
+        className="flex flex-col md:flex-row md:items-end justify-between gap-6"
       >
-        <div className="space-y-1">
-          <h1 className="text-5xl font-extrabold tracking-tight font-headline text-foreground bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+        <div className="space-y-2">
+          <h1 className="text-4xl md:text-6xl font-black tracking-tight font-headline text-foreground bg-clip-text text-transparent bg-gradient-to-br from-primary via-primary to-accent leading-tight">
             {t('app_title')}
           </h1>
-          <p className="text-muted-foreground text-lg max-w-md">{t('app_subtitle')}</p>
+          <p className="text-muted-foreground text-lg md:text-xl font-medium max-w-2xl leading-relaxed">
+            {t('app_subtitle')}
+          </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
            <SidebarTrigger className="md:hidden" />
-           <Badge variant="outline" className="px-4 py-1.5 rounded-full border-primary/20 bg-primary/5 text-primary font-bold">
-            PRO EDITION v2.5
+           <Badge variant="outline" className="px-6 py-2 rounded-full border-primary/30 bg-primary/5 text-primary font-bold tracking-wide shadow-sm">
+            ELITE EDITION V2.5
            </Badge>
         </div>
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        <div className="lg:col-span-7 space-y-6">
-          <Card className="border-border/50 shadow-2xl bg-card/40 backdrop-blur-xl rounded-2xl overflow-hidden border">
-            <CardHeader className="bg-primary/5 border-b border-primary/10">
-              <CardTitle className="flex items-center gap-2 text-xl font-bold">
-                <Zap className="w-5 h-5 text-primary" />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-10 items-start">
+        <div className="lg:col-span-7 space-y-8">
+          <Card className="border-border/60 shadow-2xl bg-card/60 backdrop-blur-3xl rounded-3xl overflow-hidden border">
+            <CardHeader className="bg-primary/5 border-b border-primary/10 p-6 md:p-8">
+              <CardTitle className="flex items-center gap-3 text-xl font-bold tracking-tight">
+                <Zap className="w-6 h-6 text-primary animate-pulse" />
                 {t('crafting_options')}
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-8 space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2.5">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('os_select_label')}</Label>
+            <CardContent className="p-6 md:p-10 space-y-10">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/80">{t('os_select_label')}</Label>
                   <Select onValueChange={setSelectedOSId} value={selectedOSId}>
-                    <SelectTrigger className="h-11 bg-background/50 border-border/50 transition-all focus:ring-primary/20">
+                    <SelectTrigger className="h-12 bg-background/40 border-border/40 transition-all hover:bg-background/60 focus:ring-primary/20 rounded-xl">
                       <SelectValue placeholder={t('placeholder_select')} />
                     </SelectTrigger>
                     <SelectContent>
@@ -134,10 +150,10 @@ function CommandGenerator() {
                   </Select>
                 </div>
 
-                <div className="space-y-2.5">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('category_label')}</Label>
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/80">{t('category_label')}</Label>
                   <Select onValueChange={setSelectedCategoryId} value={selectedCategoryId}>
-                    <SelectTrigger className="h-11 bg-background/50 border-border/50 transition-all focus:ring-primary/20">
+                    <SelectTrigger className="h-12 bg-background/40 border-border/40 transition-all hover:bg-background/60 focus:ring-primary/20 rounded-xl">
                       <SelectValue placeholder={t('placeholder_select')} />
                     </SelectTrigger>
                     <SelectContent>
@@ -148,10 +164,10 @@ function CommandGenerator() {
                   </Select>
                 </div>
 
-                <div className="space-y-2.5">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('command_label')}</Label>
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/80">{t('command_label')}</Label>
                   <Select onValueChange={setSelectedCommandId} value={selectedCommandId}>
-                    <SelectTrigger className="h-11 bg-background/50 border-border/50 transition-all focus:ring-primary/20">
+                    <SelectTrigger className="h-12 bg-background/40 border-border/40 transition-all hover:bg-background/60 focus:ring-primary/20 rounded-xl">
                       <SelectValue placeholder={t('placeholder_select')} />
                     </SelectTrigger>
                     <SelectContent>
@@ -167,13 +183,13 @@ function CommandGenerator() {
                 <motion.div 
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="p-6 rounded-xl bg-accent/5 border border-accent/10 space-y-3"
+                  className="p-6 md:p-8 rounded-2xl bg-accent/5 border border-accent/10 space-y-4"
                 >
-                  <div className="flex items-center gap-2 text-accent font-bold">
+                  <div className="flex items-center gap-3 text-accent font-black uppercase tracking-widest text-[10px]">
                     <Info className="w-4 h-4" />
                     <span>{t('description')}</span>
                   </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
+                  <p className="text-sm md:text-base text-muted-foreground leading-relaxed font-medium">
                     {currentCommand.description}
                   </p>
                 </motion.div>
@@ -188,27 +204,27 @@ function CommandGenerator() {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 10 }}
-                    className="space-y-6"
+                    className="space-y-8"
                   >
-                    <h3 className="text-lg font-bold flex items-center gap-2">
-                      <ChevronRight className="w-4 h-4 text-primary" />
+                    <h3 className="text-lg font-bold flex items-center gap-3">
+                      <ChevronRight className="w-5 h-5 text-primary" />
                       {t('parameters_title')}
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       {currentCommand.parameters.map((param) => (
-                        <div key={param.name} className="space-y-2.5">
-                          <Label className="text-sm font-medium">{param.label}</Label>
+                        <div key={param.name} className="space-y-3">
+                          <Label className="text-sm font-semibold text-foreground/90">{param.label}</Label>
                           {param.type === 'select' ? (
                             <Select 
                               onValueChange={(val) => handleParamChange(param.name, val)} 
-                              value={params[param.name] || ''}
+                              value={params[param.name] || 'default'}
                             >
-                              <SelectTrigger className="h-10 bg-background/40">
+                              <SelectTrigger className="h-12 bg-background/40 border-border/40 rounded-xl">
                                 <SelectValue placeholder={param.placeholder || t('placeholder_select')} />
                               </SelectTrigger>
                               <SelectContent>
                                 {param.options?.map(opt => (
-                                  <SelectItem key={opt} value={opt}>{opt || '(empty)'}</SelectItem>
+                                  <SelectItem key={opt} value={opt}>{opt === 'default' ? '(empty)' : opt}</SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
@@ -218,7 +234,7 @@ function CommandGenerator() {
                               placeholder={param.placeholder}
                               value={params[param.name] || ''}
                               onChange={(e) => handleParamChange(param.name, e.target.value)}
-                              className="h-10 bg-background/40"
+                              className="h-12 bg-background/40 border-border/40 rounded-xl px-4"
                             />
                           )}
                         </div>
@@ -236,38 +252,40 @@ function CommandGenerator() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
           >
-            <Card className="border-primary/20 shadow-2xl bg-black/95 text-white rounded-2xl border overflow-hidden">
-              <CardHeader className="bg-white/5 p-6 border-b border-white/10">
+            <Card className="border-primary/30 shadow-2xl bg-slate-950 text-white rounded-3xl border overflow-hidden">
+              <CardHeader className="bg-white/5 p-6 md:p-8 border-b border-white/10">
                 <CardTitle className="text-lg font-bold flex items-center justify-between">
                   {t('result_title')}
-                  <div className="flex gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                    <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                    <div className="w-3 h-3 rounded-full bg-green-500/80" />
+                  <div className="flex gap-2">
+                    <div className="w-3.5 h-3.5 rounded-full bg-red-500/90 shadow-lg shadow-red-500/20" />
+                    <div className="w-3.5 h-3.5 rounded-full bg-yellow-500/90 shadow-lg shadow-yellow-500/20" />
+                    <div className="w-3.5 h-3.5 rounded-full bg-green-500/90 shadow-lg shadow-green-500/20" />
                   </div>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
-                <div className="p-8 font-code min-h-[160px] flex items-center justify-center relative group">
-                  <p className="text-2xl text-emerald-400 break-all text-center leading-relaxed">
-                    {generatedCommand ? (
-                      <span className="opacity-60 mr-2">$</span>
-                    ) : null}
-                    {generatedCommand || '...'}
-                  </p>
+                <div className="p-8 md:p-12 font-code min-h-[220px] flex items-center justify-center relative group bg-gradient-to-b from-transparent to-black/20">
+                  <div className="w-full">
+                    <p className="text-xl md:text-3xl text-emerald-400 break-all leading-relaxed tracking-tight">
+                      {generatedCommand ? (
+                        <span className="opacity-40 mr-3 select-none">$</span>
+                      ) : null}
+                      {generatedCommand || <span className="text-white/20 animate-pulse italic">Waiting for command forge...</span>}
+                    </p>
+                  </div>
                   
                   {generatedCommand && (
                     <Button 
                       size="icon" 
                       onClick={copyToClipboard}
-                      className="absolute bottom-4 right-4 bg-white/10 hover:bg-white/20 border border-white/10 backdrop-blur-md transition-all shadow-xl"
+                      className="absolute bottom-6 right-6 h-12 w-12 rounded-2xl bg-white/10 hover:bg-primary border border-white/10 backdrop-blur-3xl transition-all duration-300 shadow-2xl hover:scale-110 active:scale-95 group-hover:bg-primary/20"
                     >
-                      <Copy className="w-4 h-4" />
+                      <Copy className="w-5 h-5" />
                     </Button>
                   )}
                 </div>
-                <div className="bg-white/5 p-4 border-t border-white/10">
-                  <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] text-center font-bold">
+                <div className="bg-white/5 p-5 border-t border-white/10">
+                  <p className="text-[10px] text-white/40 uppercase tracking-[0.3em] text-center font-black">
                     {t('usage_tip')}
                   </p>
                 </div>
@@ -275,24 +293,27 @@ function CommandGenerator() {
             </Card>
           </motion.div>
 
-          <Card className="border-border/50 bg-card/30 rounded-2xl p-6">
-            <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-4">{t('server_status')}</h4>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border/40">
-                <div className="flex items-center gap-3">
-                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                  <span className="text-sm font-medium">{t('status_online')}</span>
+          <Card className="border-border/60 bg-card/40 rounded-3xl p-8 shadow-xl">
+            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 mb-6">{t('server_status')}</h4>
+            <div className="space-y-6">
+              <div className="flex items-center justify-between p-4 rounded-2xl bg-background/60 border border-border/40 shadow-inner">
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <div className="w-3 h-3 rounded-full bg-emerald-500 animate-ping absolute inset-0 opacity-40" />
+                    <div className="w-3 h-3 rounded-full bg-emerald-500 relative shadow-[0_0_12px_rgba(16,185,129,0.5)]" />
+                  </div>
+                  <span className="text-sm font-bold tracking-tight">{t('status_online')}</span>
                 </div>
-                <Badge variant="secondary" className="text-[10px] font-bold">LATENCY: 12ms</Badge>
+                <Badge variant="secondary" className="text-[9px] font-black tracking-widest bg-emerald-500/10 text-emerald-600 border-none">LATENCY: 8MS</Badge>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                 <div className="p-3 rounded-lg bg-background/50 border border-border/40">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase">{currentOS?.name || 'OS'}</p>
-                    <p className="text-xs font-bold text-primary mt-1">OPTIMIZED</p>
+              <div className="grid grid-cols-2 gap-4">
+                 <div className="p-5 rounded-2xl bg-background/60 border border-border/40 shadow-sm transition-hover hover:border-primary/20">
+                    <p className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest">{currentOS?.name || 'OS'}</p>
+                    <p className="text-sm font-black text-primary mt-2">NATIVE CORE</p>
                  </div>
-                 <div className="p-3 rounded-lg bg-background/50 border border-border/40">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase">ENGINE</p>
-                    <p className="text-xs font-bold text-accent mt-1">V8-TURBO</p>
+                 <div className="p-5 rounded-2xl bg-background/60 border border-border/40 shadow-sm transition-hover hover:border-accent/20">
+                    <p className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest">ARCHITECTURE</p>
+                    <p className="text-sm font-black text-accent mt-2">V8-ULTRA</p>
                  </div>
               </div>
             </div>
@@ -308,32 +329,36 @@ function PageContent() {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen bg-[#F7F9FA] dark:bg-[#0E1117] text-foreground font-body">
-        <Sidebar className="border-r border-border/50 bg-sidebar/80 backdrop-blur-md">
-          <SidebarHeader className="p-8">
+      <div className="flex min-h-screen bg-[#F8FAFC] dark:bg-[#020617] text-foreground font-body">
+        <Sidebar className="border-r border-border/50 bg-sidebar/95 backdrop-blur-3xl">
+          <SidebarHeader className="p-10">
             <motion.div 
               whileHover={{ scale: 1.02 }}
-              className="flex items-center gap-4 cursor-pointer"
+              className="flex items-center gap-5 cursor-pointer"
             >
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white shadow-2xl shadow-primary/30">
-                <Terminal className="w-7 h-7" />
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary via-primary to-accent flex items-center justify-center text-white shadow-2xl shadow-primary/40 group relative overflow-hidden">
+                <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <Terminal className="w-8 h-8 relative z-10" />
               </div>
-              <span className="font-black text-2xl tracking-tighter">{t('app_title')}</span>
+              <div className="flex flex-col">
+                <span className="font-black text-2xl tracking-tighter leading-none">{t('app_title')}</span>
+                <span className="text-[9px] font-black text-primary tracking-[0.2em] mt-1 opacity-60">PRO COMMAND STUDIO</span>
+              </div>
             </motion.div>
           </SidebarHeader>
-          <SidebarContent className="px-4">
+          <SidebarContent className="px-6 space-y-6">
             <SidebarGroup>
-              <SidebarGroupLabel className="px-4 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60">
+              <SidebarGroupLabel className="px-4 py-4 text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 mb-2">
                 {t('sidebar_language')}
               </SidebarGroupLabel>
-              <SidebarMenu className="gap-2">
+              <SidebarMenu className="gap-3">
                 <SidebarMenuItem>
                   <SidebarMenuButton 
                     onClick={() => setLanguage('en')} 
                     isActive={language === 'en'}
-                    className={`h-11 rounded-xl px-4 transition-all ${language === 'en' ? 'bg-primary/10 text-primary font-bold shadow-sm' : 'hover:bg-accent/5'}`}
+                    className={`h-12 rounded-2xl px-5 transition-all duration-300 ${language === 'en' ? 'bg-primary/15 text-primary font-bold shadow-lg shadow-primary/5' : 'hover:bg-primary/5'}`}
                   >
-                    <Globe className="w-4 h-4 mr-3" />
+                    <Globe className="w-4.5 h-4.5 mr-4" />
                     English
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -341,48 +366,50 @@ function PageContent() {
                   <SidebarMenuButton 
                     onClick={() => setLanguage('es')} 
                     isActive={language === 'es'}
-                    className={`h-11 rounded-xl px-4 transition-all ${language === 'es' ? 'bg-primary/10 text-primary font-bold shadow-sm' : 'hover:bg-accent/5'}`}
+                    className={`h-12 rounded-2xl px-5 transition-all duration-300 ${language === 'es' ? 'bg-primary/15 text-primary font-bold shadow-lg shadow-primary/5' : 'hover:bg-primary/5'}`}
                   >
-                    <Globe className="w-4 h-4 mr-3" />
+                    <Globe className="w-4.5 h-4.5 mr-4" />
                     Español
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroup>
 
-            <Separator className="mx-4 my-6 opacity-30" />
+            <Separator className="mx-6 opacity-30" />
 
             <SidebarGroup>
-              <SidebarGroupLabel className="px-4 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60">
+              <SidebarGroupLabel className="px-4 py-4 text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 mb-2">
                 {t('presets')}
               </SidebarGroupLabel>
-              <SidebarMenu className="gap-1">
+              <SidebarMenu className="gap-2">
                 {Object.entries(ICON_MAP).map(([name, Icon]) => (
                   <SidebarMenuItem key={name}>
-                    <SidebarMenuButton className="h-10 rounded-xl px-4 hover:bg-primary/5 group transition-all">
-                      <Icon className="w-4 h-4 mr-3 text-muted-foreground group-hover:text-primary transition-colors" />
-                      <span className="text-sm font-medium">{name}</span>
+                    <SidebarMenuButton className="h-11 rounded-xl px-5 hover:bg-primary/10 group transition-all duration-300">
+                      <Icon className="w-4.5 h-4.5 mr-4 text-muted-foreground group-hover:text-primary transition-colors duration-300" />
+                      <span className="text-sm font-bold text-muted-foreground/80 group-hover:text-foreground transition-colors">{name}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
             </SidebarGroup>
           </SidebarContent>
-          <SidebarFooter className="p-6">
-             <div className="bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl p-5 border border-primary/10 shadow-sm">
-                <p className="text-[10px] font-black text-primary/70 uppercase tracking-widest mb-2">Cloud Core</p>
-                <div className="flex items-center gap-3">
+          <SidebarFooter className="p-8">
+             <div className="bg-gradient-to-br from-primary/10 via-accent/5 to-transparent rounded-3xl p-6 border border-primary/20 shadow-2xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full -translate-y-12 translate-x-12 blur-3xl group-hover:bg-primary/20 transition-all duration-500" />
+                <p className="text-[9px] font-black text-primary/80 uppercase tracking-[0.3em] mb-3">System Node Alpha</p>
+                <div className="flex items-center gap-4">
                   <div className="relative">
-                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping absolute inset-0" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 relative" />
+                    <div className="w-3 h-3 rounded-full bg-emerald-500 animate-ping absolute inset-0" />
+                    <div className="w-3 h-3 rounded-full bg-emerald-500 relative shadow-sm" />
                   </div>
-                  <span className="text-xs font-bold">Stable Node Alpha</span>
+                  <span className="text-xs font-bold tracking-tight">V8-CORE STABLE</span>
                 </div>
              </div>
           </SidebarFooter>
         </Sidebar>
-        <SidebarInset className="flex-1 bg-background overflow-x-hidden">
-          <main className="min-h-screen flex items-center justify-center py-12 md:py-0">
+        <SidebarInset className="flex-1 bg-background/50 overflow-x-hidden relative">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(59,130,246,0.05),transparent_50%)] pointer-events-none" />
+          <main className="min-h-screen flex items-center justify-center py-16 md:py-24 relative z-10">
             <CommandGenerator />
           </main>
         </SidebarInset>

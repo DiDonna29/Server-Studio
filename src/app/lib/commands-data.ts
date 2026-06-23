@@ -43,7 +43,7 @@ export const COMMANDS_BY_OS: OSData[] = [
             description: 'List information about files in the current directory.',
             syntax: 'ls {options} {path}',
             parameters: [
-              { name: 'options', label: 'Options', type: 'select', options: ['', '-l', '-a', '-la', '-lh', '-R'], defaultValue: '-la' },
+              { name: 'options', label: 'Options', type: 'select', options: ['default', '-l', '-a', '-la', '-lh', '-R'], defaultValue: '-la' },
               { name: 'path', label: 'Path', type: 'text', placeholder: '.', defaultValue: '' }
             ]
           },
@@ -53,29 +53,20 @@ export const COMMANDS_BY_OS: OSData[] = [
             description: 'Copy files or directories from source to destination.',
             syntax: 'cp {options} {source} {destination}',
             parameters: [
-              { name: 'options', label: 'Options', type: 'select', options: ['', '-r', '-v', '-p', '-i', '-u'], defaultValue: '-r' },
+              { name: 'options', label: 'Options', type: 'select', options: ['default', '-r', '-v', '-p', '-i', '-u'], defaultValue: '-r' },
               { name: 'source', label: 'Source', type: 'text', placeholder: 'file.txt' },
               { name: 'destination', label: 'Destination', type: 'text', placeholder: '/path/to/dest' }
             ]
           },
           {
-            id: 'chmod',
-            label: 'Change Permissions',
-            description: 'Change the access permissions of a file or directory.',
-            syntax: 'chmod {permissions} {path}',
+            id: 'find',
+            label: 'Find Files',
+            description: 'Search for files in a directory hierarchy.',
+            syntax: 'find {path} -name "{pattern}" {options}',
             parameters: [
-              { name: 'permissions', label: 'Mode', type: 'select', options: ['777', '755', '644', '600', '+x', '-x', 'u+s'], defaultValue: '755' },
-              { name: 'path', label: 'File/Dir', type: 'text', placeholder: 'script.sh' }
-            ]
-          },
-          {
-            id: 'mkdir',
-            label: 'Create Directory',
-            description: 'Create one or more directories.',
-            syntax: 'mkdir {options} {name}',
-            parameters: [
-              { name: 'options', label: 'Options', type: 'select', options: ['', '-p', '-v', '-m 755'], defaultValue: '-p' },
-              { name: 'name', label: 'Directory Name', type: 'text', placeholder: 'my_new_folder' }
+              { name: 'path', label: 'Path', type: 'text', defaultValue: '.' },
+              { name: 'pattern', label: 'Pattern', type: 'text', placeholder: '*.txt' },
+              { name: 'options', label: 'Extra Options', type: 'select', options: ['default', '-type f', '-type d', '-empty', '-mtime -7'], defaultValue: 'default' }
             ]
           }
         ]
@@ -95,48 +86,47 @@ export const COMMANDS_BY_OS: OSData[] = [
             ]
           },
           {
-            id: 'df',
-            label: 'Disk Usage',
-            description: 'Display the amount of disk space used and available.',
-            syntax: 'df {options}',
+            id: 'top',
+            label: 'Process Monitor',
+            description: 'Display Linux processes and system resource usage.',
+            syntax: 'top {options}',
             parameters: [
-              { name: 'options', label: 'Options', type: 'select', options: ['-h', '-T', '-i', '--total'], defaultValue: '-h' }
+              { name: 'options', label: 'Options', type: 'select', options: ['default', '-u root', '-p 1', '-n 1', '-b'], defaultValue: 'default' }
             ]
           },
           {
-            id: 'free',
-            label: 'Memory Info',
-            description: 'Display amount of free and used memory in the system.',
-            syntax: 'free {options}',
+            id: 'journalctl',
+            label: 'System Logs',
+            description: 'Query and display logs from journald.',
+            syntax: 'journalctl {options}',
             parameters: [
-              { name: 'options', label: 'Options', type: 'select', options: ['-m', '-g', '-h', '-s 5'], defaultValue: '-h' }
+              { name: 'options', label: 'Filter', type: 'select', options: ['default', '-u nginx', '-f', '-n 100', '-p err', '--since "1 hour ago"'], defaultValue: '-n 100' }
             ]
           }
         ]
       },
       {
-        name: 'Network & Connectivity',
+        name: 'Networking',
         icon: 'Network',
         commands: [
           {
             id: 'ssh',
             label: 'SSH Connect',
-            description: 'Open-source implementation of the Secure Shell protocol.',
+            description: 'Secure Shell remote login client.',
             syntax: 'ssh {user}@{host} {options}',
             parameters: [
-              { name: 'user', label: 'User', type: 'text', placeholder: 'root' },
-              { name: 'host', label: 'Host/IP', type: 'text', placeholder: '192.168.1.1' },
-              { name: 'options', label: 'Options', type: 'select', options: ['', '-p 22', '-i key.pem', '-v'], defaultValue: '' }
+              { name: 'user', label: 'User', type: 'text', defaultValue: 'root' },
+              { name: 'host', label: 'Host', type: 'text', placeholder: '1.2.3.4' },
+              { name: 'options', label: 'Port/Key', type: 'select', options: ['default', '-p 22', '-i ~/.ssh/id_rsa', '-v', '-C'], defaultValue: 'default' }
             ]
           },
           {
-            id: 'curl',
-            label: 'HTTP Request',
-            description: 'Transfer data from or to a server.',
-            syntax: 'curl {options} {url}',
+            id: 'netstat',
+            label: 'Network Statistics',
+            description: 'Print network connections, routing tables, and interface statistics.',
+            syntax: 'netstat {options}',
             parameters: [
-              { name: 'options', label: 'Options', type: 'select', options: ['-L', '-v', '-O', '-I', '-X POST', '-H "Content-Type: application/json"'], defaultValue: '-L' },
-              { name: 'url', label: 'URL', type: 'text', placeholder: 'https://api.example.com' }
+              { name: 'options', label: 'Filter', type: 'select', options: ['-tulpn', '-an', '-r', '-i'], defaultValue: '-tulpn' }
             ]
           }
         ]
@@ -153,85 +143,44 @@ export const COMMANDS_BY_OS: OSData[] = [
         commands: [
           {
             id: 'ipconfig',
-            label: 'IP Configuration',
+            label: 'IP Config',
             description: 'Displays all current TCP/IP network configuration values.',
             syntax: 'ipconfig {option}',
             parameters: [
-              { name: 'option', label: 'Option', type: 'select', options: ['', '/all', '/release', '/renew', '/flushdns', '/displaydns'], defaultValue: '/all' }
+              { name: 'option', label: 'Option', type: 'select', options: ['default', '/all', '/release', '/renew', '/flushdns'], defaultValue: '/all' }
             ]
           },
           {
             id: 'ping',
             label: 'Ping Host',
-            description: 'Sends ICMP Echo Request messages to verify connectivity.',
+            description: 'Verify connectivity to a remote host.',
             syntax: 'ping {host} {options}',
             parameters: [
-              { name: 'host', label: 'Hostname/IP', type: 'text', placeholder: 'google.com', defaultValue: '8.8.8.8' },
-              { name: 'options', label: 'Options', type: 'select', options: ['', '-t', '-n 10', '-l 64', '-4', '-6'], defaultValue: '' }
-            ]
-          },
-          {
-            id: 'netstat',
-            label: 'Network Stats',
-            description: 'Displays active TCP connections, ports on which the computer is listening.',
-            syntax: 'netstat {options}',
-            parameters: [
-              { name: 'options', label: 'Options', type: 'select', options: ['-a', '-n', '-o', '-an', '-p tcp', '-r'], defaultValue: '-an' }
+              { name: 'host', label: 'Host', type: 'text', defaultValue: '8.8.8.8' },
+              { name: 'options', label: 'Options', type: 'select', options: ['default', '-t', '-n 10', '-l 64', '-4'], defaultValue: 'default' }
             ]
           }
         ]
       },
       {
-        name: 'Maintenance',
-        icon: 'ShieldCheck',
+        name: 'System',
+        icon: 'Cpu',
         commands: [
           {
-            id: 'sfc',
-            label: 'System File Checker',
-            description: 'Scans and verifies the integrity of all protected system files.',
-            syntax: 'sfc /scannow',
-            parameters: []
-          },
-          {
-            id: 'chkdsk',
-            label: 'Check Disk',
-            description: 'Checks the file system and file system metadata of a volume for logical and physical errors.',
-            syntax: 'chkdsk {drive} {options}',
-            parameters: [
-              { name: 'drive', label: 'Drive', type: 'text', placeholder: 'C:', defaultValue: 'C:' },
-              { name: 'options', label: 'Options', type: 'select', options: ['', '/f', '/r', '/x'], defaultValue: '/f' }
-            ]
-          },
-          {
             id: 'tasklist',
-            label: 'List Processes',
+            label: 'Task List',
             description: 'Displays a list of currently running processes.',
             syntax: 'tasklist {filter}',
             parameters: [
-              { name: 'filter', label: 'Filter', type: 'text', placeholder: '/FI "MEMUSAGE gt 10000"' }
+              { name: 'filter', label: 'Filter', type: 'select', options: ['default', '/v', '/svc', '/apps'], defaultValue: 'default' }
             ]
-          }
-        ]
-      },
-      {
-        name: 'System Utilities',
-        icon: 'Terminal',
-        commands: [
-          {
-            id: 'systeminfo',
-            label: 'System Info',
-            description: 'Displays detailed configuration information about a computer and its operating system.',
-            syntax: 'systeminfo',
-            parameters: []
           },
           {
-            id: 'gpupdate',
-            label: 'Policy Update',
-            description: 'Refreshes local and Active Directory-based Group Policy settings.',
-            syntax: 'gpupdate {options}',
-            parameters: [
-              { name: 'options', label: 'Options', type: 'select', options: ['', '/force', '/wait:0'], defaultValue: '/force' }
-            ]
+            id: 'sfc',
+            label: 'File Checker',
+            description: 'Scans and verifies the integrity of all protected system files.',
+            syntax: 'sfc /scannow',
+            parameters: []
           }
         ]
       }
@@ -242,69 +191,43 @@ export const COMMANDS_BY_OS: OSData[] = [
     name: 'macOS',
     categories: [
       {
-        name: 'Package Management',
+        name: 'Package Manager',
         icon: 'Database',
         commands: [
           {
             id: 'brew',
             label: 'Homebrew',
-            description: 'The missing package manager for macOS.',
+            description: 'Install and manage packages on macOS.',
             syntax: 'brew {action} {package}',
             parameters: [
-              { name: 'action', label: 'Action', type: 'select', options: ['install', 'uninstall', 'update', 'upgrade', 'list', 'info', 'doctor'], defaultValue: 'install' },
-              { name: 'package', label: 'Package Name', type: 'text', placeholder: 'node' }
+              { name: 'action', label: 'Action', type: 'select', options: ['install', 'uninstall', 'update', 'upgrade', 'list', 'info'], defaultValue: 'install' },
+              { name: 'package', label: 'Package', type: 'text', placeholder: 'node' }
             ]
           }
         ]
       },
       {
-        name: 'System Utilities',
+        name: 'Utilities',
         icon: 'Terminal',
         commands: [
           {
             id: 'diskutil',
             label: 'Disk Utility',
-            description: 'Modify, verify and repair local disks.',
-            syntax: 'diskutil {action} {disk}',
+            description: 'Manage disks and volumes.',
+            syntax: 'diskutil {action} {target}',
             parameters: [
-              { name: 'action', label: 'Action', type: 'select', options: ['list', 'info', 'verifyDisk', 'repairDisk', 'eject'], defaultValue: 'list' },
-              { name: 'disk', label: 'Disk ID', type: 'text', placeholder: '/dev/disk1' }
+              { name: 'action', label: 'Action', type: 'select', options: ['list', 'info', 'verifyDisk', 'repairDisk'], defaultValue: 'list' },
+              { name: 'target', label: 'Disk ID', type: 'text', placeholder: '/dev/disk0' }
             ]
           },
-          {
-            id: 'open',
-            label: 'Open App/File',
-            description: 'Opens a file, directory, or URL.',
-            syntax: 'open {path} {options}',
-            parameters: [
-              { name: 'path', label: 'Path/URL', type: 'text', placeholder: 'https://google.com' },
-              { name: 'options', label: 'Options', type: 'select', options: ['', '-a "Google Chrome"', '-e', '-R'], defaultValue: '' }
-            ]
-          },
-          {
-            id: 'say',
-            label: 'Text to Speech',
-            description: 'Converts text to audible speech.',
-            syntax: 'say "{text}" -v {voice}',
-            parameters: [
-              { name: 'text', label: 'Message', type: 'text', placeholder: 'Hello world' },
-              { name: 'voice', label: 'Voice', type: 'select', options: ['Alex', 'Samantha', 'Daniel', 'Victoria', 'Fred', 'Karen'], defaultValue: 'Samantha' }
-            ]
-          }
-        ]
-      },
-      {
-        name: 'Networking',
-        icon: 'Network',
-        commands: [
           {
             id: 'networksetup',
             label: 'Network Setup',
             description: 'Configuration tool for network settings.',
-            syntax: 'networksetup -{action} {service}',
+            syntax: 'networksetup -{action} {interface}',
             parameters: [
-              { name: 'action', label: 'Action', type: 'select', options: ['getairportnetwork', 'listallnetworkservices', 'getinfo', 'setdhcp'], defaultValue: 'getairportnetwork' },
-              { name: 'service', label: 'Interface', type: 'text', placeholder: 'en0' }
+              { name: 'action', label: 'Action', type: 'select', options: ['listallnetworkservices', 'getinfo', 'getairportnetwork'], defaultValue: 'listallnetworkservices' },
+              { name: 'interface', label: 'Interface', type: 'text', placeholder: 'Wi-Fi' }
             ]
           }
         ]
