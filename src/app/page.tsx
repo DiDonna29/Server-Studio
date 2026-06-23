@@ -2,7 +2,7 @@
 "use client"
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
+import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { LanguageProvider, useLanguage } from '@/app/lib/language-context';
-import { Terminal, Copy, Globe, Cpu, Network, Files, ShieldCheck, Monitor, ChevronRight, Zap, Info } from 'lucide-react';
+import { Terminal, Copy, Globe, Cpu, Network, Files, ShieldCheck, Monitor, ChevronRight, Zap, Info, Server, Activity, Lock, Database } from 'lucide-react';
 import { Toaster } from '@/components/ui/toaster';
 import { useToast } from '@/hooks/use-toast';
 import { COMMANDS_BY_OS, OSData, Category, CommandDefinition } from '@/app/lib/commands-data';
@@ -23,6 +23,10 @@ const ICON_MAP: Record<string, any> = {
   Network,
   ShieldCheck,
   Terminal,
+  Server,
+  Activity,
+  Lock,
+  Database
 };
 
 function CommandGenerator() {
@@ -100,7 +104,7 @@ function CommandGenerator() {
         <div className="flex items-center gap-3">
            <SidebarTrigger className="md:hidden" />
            <Badge variant="outline" className="px-4 py-1.5 rounded-full border-primary/20 bg-primary/5 text-primary font-bold">
-            PRO EDITION v2.0
+            PRO EDITION v2.5
            </Badge>
         </div>
       </motion.div>
